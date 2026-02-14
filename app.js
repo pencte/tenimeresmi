@@ -5,50 +5,6 @@ const API_BASE = 'https://www.sankavollerei.com/anime/samehadaku';
 let currentPage = 'home';
 let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
 let searchTimeout = null;
-let currentDay = 'senin';
-
-// Schedule data
-let scheduleData = {
-    senin: [
-        { time: '12:00', title: 'One Piece', episode: '1155', studio: 'Toei Animation', poster: 'https://via.placeholder.com/60x80', animeId: 'one-piece' },
-        { time: '16:30', title: 'Detective Conan', episode: '1120', studio: 'TMS Entertainment', poster: 'https://via.placeholder.com/60x80', animeId: 'detective-conan' },
-    ],
-    selasa: [
-        { time: '13:30', title: 'Jujutsu Kaisen Season 3', episode: '7', studio: 'MAPPA', poster: 'https://via.placeholder.com/60x80', animeId: 'jujutsu-kaisen-season-3' },
-        { time: '19:00', title: 'Chainsaw Man', episode: '8', studio: 'MAPPA', poster: 'https://via.placeholder.com/60x80', animeId: 'chainsaw-man' },
-    ],
-    rabu: [
-        { time: '15:00', title: 'Kimetsu no Yaiba', episode: '8', studio: 'Ufotable', poster: 'https://via.placeholder.com/60x80', animeId: 'kimetsu-no-yaiba' },
-        { time: '20:30', title: 'Spy x Family', episode: '10', studio: 'WIT Studio', poster: 'https://via.placeholder.com/60x80', animeId: 'spy-x-family' },
-    ],
-    kamis: [
-        { time: '14:00', title: 'Boruto', episode: '293', studio: 'Pierrot', poster: 'https://via.placeholder.com/60x80', animeId: 'boruto' },
-        { time: '18:00', title: 'Black Clover', episode: '170', studio: 'Pierrot', poster: 'https://via.placeholder.com/60x80', animeId: 'black-clover' },
-    ],
-    jumat: [
-        { time: '11:30', title: 'Dragon Ball Daima', episode: '6', studio: 'Toei Animation', poster: 'https://via.placeholder.com/60x80', animeId: 'dragon-ball-daima' },
-        { time: '21:00', title: 'Bleach TYBW', episode: '15', studio: 'Pierrot', poster: 'https://via.placeholder.com/60x80', animeId: 'bleach-tybw' },
-    ],
-    sabtu: [
-        { time: '10:00', title: 'Doraemon', episode: '850', studio: 'Shin-Ei Animation', poster: 'https://via.placeholder.com/60x80', animeId: 'doraemon' },
-        { time: '17:30', title: 'Pokemon', episode: '1234', studio: 'OLM', poster: 'https://via.placeholder.com/60x80', animeId: 'pokemon' },
-    ],
-    minggu: [
-        { time: '09:00', title: 'Crayon Shin-chan', episode: '1200', studio: 'Shin-Ei Animation', poster: 'https://via.placeholder.com/60x80', animeId: 'crayon-shinchan' },
-        { time: '22:00', title: 'Attack on Titan', episode: '87', studio: 'MAPPA', poster: 'https://via.placeholder.com/60x80', animeId: 'attack-on-titan' },
-    ]
-};
-
-// Days configuration
-const days = [
-    { id: 'senin', label: 'Senin' },
-    { id: 'selasa', label: 'Selasa' },
-    { id: 'rabu', label: 'Rabu' },
-    { id: 'kamis', label: 'Kamis' },
-    { id: 'jumat', label: 'Jumat' },
-    { id: 'sabtu', label: 'Sabtu' },
-    { id: 'minggu', label: 'Minggu' }
-];
 
 // DOM Elements
 const splash = document.getElementById('splash');
@@ -61,26 +17,19 @@ const overlay = document.getElementById('overlay');
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    // Hide splash after animation
     setTimeout(() => {
         splash.style.display = 'none';
         app.style.display = 'block';
         loadPage('home');
     }, 2500);
 
-    // Event listeners
     setupEventListeners();
-    
-    // Mark live schedule every minute
-    setInterval(markLiveSchedule, 60000);
 });
 
 function setupEventListeners() {
-    // Search toggle
     document.getElementById('searchToggle').addEventListener('click', toggleSearch);
     document.getElementById('closeSearch').addEventListener('click', toggleSearch);
     
-    // Search input with debounce
     searchInput.addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
@@ -90,12 +39,10 @@ function setupEventListeners() {
         }, 500);
     });
     
-    // Menu toggle
     document.getElementById('menuToggle').addEventListener('click', openMenu);
     document.getElementById('closeMenu').addEventListener('click', closeMenu);
     overlay.addEventListener('click', closeMenu);
     
-    // Bottom navigation
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', () => {
             const page = item.dataset.page;
@@ -107,7 +54,6 @@ function setupEventListeners() {
         });
     });
     
-    // Side menu navigation
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', () => {
             const page = item.dataset.page;
@@ -141,7 +87,6 @@ function closeMenu() {
 function navigateToPage(page) {
     currentPage = page;
     
-    // Update active states
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.toggle('active', item.dataset.page === page);
     });
@@ -150,7 +95,6 @@ function navigateToPage(page) {
         item.classList.toggle('active', item.dataset.page === page);
     });
     
-    // Load page content
     loadPage(page);
 }
 
@@ -162,8 +106,11 @@ async function loadPage(page) {
             case 'home':
                 await loadHome();
                 break;
+            case 'schedule':
+                await loadSchedule();
+                break;
             case 'ongoing':
-                loadSchedule();
+                await loadOngoing();
                 break;
             case 'completed':
                 await loadCompleted();
@@ -217,134 +164,258 @@ async function fetchAPI(endpoint) {
         if (data.status !== 'success') throw new Error(data.message || 'Unknown error');
         return data;
     } catch (error) {
-        console.log('API Error, using mock data:', error);
+        console.log('API Error:', error);
         return null;
     }
 }
 
 async function loadHome() {
-    const data = await fetchAPI('/home');
-    const recent = data?.data?.recent?.animeList || [];
-    const movies = data?.data?.movie?.animeList || [];
-    
-    let html = `
-        <div class="section-header">
-            <h2>Episode Terbaru</h2>
-            <span class="view-all" onclick="navigateToPage('ongoing')">Lihat Semua</span>
-        </div>
-        <div class="horizontal-scroll">
-    `;
-    
-    (recent.length ? recent : scheduleData.senin).slice(0, 10).forEach(anime => {
-        html += `
-            <div class="horizontal-card" onclick="showAnimeDetail('${anime.animeId || anime.title.toLowerCase().replace(/ /g, '-')}')">
-                <img src="${anime.poster || 'https://via.placeholder.com/120x180'}" alt="${anime.title}">
-                <div class="title">${anime.title}</div>
-            </div>
-        `;
-    });
-    
-    html += `</div>`;
-    
-    if (movies.length > 0) {
-        html += `
-            <div class="section-header" style="margin-top: 30px;">
-                <h2>Movie Terbaru</h2>
-                <span class="view-all" onclick="navigateToPage('movies')">Lihat Semua</span>
+    try {
+        const response = await fetch('https://www.sankavollerei.com/anime/samehadaku/home');
+        const data = await response.json();
+        
+        const recent = data.data?.recent?.animeList || [];
+        const movies = data.data?.movie?.animeList || [];
+        
+        let html = `
+            <div class="section-header">
+                <h2>Episode Terbaru</h2>
+                <span class="view-all" onclick="navigateToPage('ongoing')">Lihat Semua</span>
             </div>
             <div class="horizontal-scroll">
         `;
         
-        movies.slice(0, 10).forEach(movie => {
+        recent.slice(0, 10).forEach(anime => {
             html += `
-                <div class="horizontal-card" onclick="showAnimeDetail('${movie.animeId}')">
-                    <img src="${movie.poster || 'https://via.placeholder.com/120x180'}" alt="${movie.title}">
-                    <div class="title">${movie.title}</div>
+                <div class="horizontal-card" onclick="showAnimeDetail('${anime.animeId}')">
+                    <img src="${anime.poster || 'https://via.placeholder.com/120x180'}" alt="${anime.title}">
+                    <div class="title">${anime.title}</div>
                 </div>
             `;
         });
         
         html += `</div>`;
+        
+        if (movies.length > 0) {
+            html += `
+                <div class="section-header" style="margin-top: 30px;">
+                    <h2>Movie Terbaru</h2>
+                    <span class="view-all" onclick="navigateToPage('movies')">Lihat Semua</span>
+                </div>
+                <div class="horizontal-scroll">
+            `;
+            
+            movies.slice(0, 10).forEach(movie => {
+                html += `
+                    <div class="horizontal-card" onclick="showAnimeDetail('${movie.animeId}')">
+                        <img src="${movie.poster || 'https://via.placeholder.com/120x180'}" alt="${movie.title}">
+                        <div class="title">${movie.title}</div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+        }
+        
+        mainContent.innerHTML = html;
+    } catch (error) {
+        showError('Gagal memuat home');
     }
-    
-    mainContent.innerHTML = html;
 }
 
-function loadSchedule() {
-    const daysHTML = days.map(day => `
-        <div class="day-tab ${day.id === currentDay ? 'active' : ''}" onclick="changeDay('${day.id}')">
-            ${day.label}
-        </div>
-    `).join('');
-
-    const dayData = scheduleData[currentDay] || [];
+async function loadSchedule() {
+    showLoading();
     
-    const scheduleHTML = dayData.map(item => `
-        <div class="schedule-item" onclick="showAnimeDetail('${item.animeId}')">
-            <div class="schedule-time">
-                <i class="fas fa-clock"></i> ${item.time}
+    try {
+        const response = await fetch('https://www.sankavollerei.com/anime/samehadaku/schedule');
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.data?.days) {
+            renderScheduleFromAPI(data.data.days);
+        } else {
+            throw new Error('Data jadwal tidak ditemukan');
+        }
+    } catch (error) {
+        console.error('Error loading schedule:', error);
+        showError('Gagal memuat jadwal. Pastikan koneksi internet aktif.');
+    }
+}
+
+function renderScheduleFromAPI(daysData) {
+    const dayMapping = {
+        'Monday': 'senin',
+        'Tuesday': 'selasa', 
+        'Wednesday': 'rabu',
+        'Thursday': 'kamis',
+        'Friday': 'jumat',
+        'Saturday': 'sabtu',
+        'Sunday': 'minggu'
+    };
+    
+    const dayDisplay = {
+        'Monday': 'Senin',
+        'Tuesday': 'Selasa',
+        'Wednesday': 'Rabu',
+        'Thursday': 'Kamis',
+        'Friday': 'Jumat',
+        'Saturday': 'Sabtu',
+        'Sunday': 'Minggu'
+    };
+    
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    let currentDay = localStorage.getItem('currentDay') || dayMapping[today] || 'senin';
+    
+    const daysTabs = Object.keys(dayMapping).map(engDay => {
+        const id = dayMapping[engDay];
+        return `
+            <div class="day-tab ${id === currentDay ? 'active' : ''}" onclick="changeDay('${id}')">
+                ${dayDisplay[engDay]}
             </div>
-            <div class="schedule-content">
-                <img src="${item.poster || 'https://via.placeholder.com/60x80'}" alt="${item.title}" class="schedule-poster">
-                <div class="schedule-info">
-                    <h3 class="schedule-title">${item.title}</h3>
-                    <div class="schedule-episode">Episode ${item.episode}</div>
-                    <div class="schedule-studio">${item.studio}</div>
+        `;
+    }).join('');
+    
+    const activeDayData = daysData.find(d => dayMapping[d.day] === currentDay);
+    const animeList = activeDayData?.animeList || [];
+    
+    const totalEpisodes = animeList.length;
+    const liveNow = animeList.filter(item => {
+        if (item.estimation === 'Update') return false;
+        return item.estimation?.startsWith('0d');
+    }).length;
+    
+    const scheduleHTML = animeList.map(anime => {
+        let timeDisplay = 'Jadwal menyusul';
+        let isLive = false;
+        
+        if (anime.estimation && anime.estimation !== 'Update') {
+            const match = anime.estimation.match(/(\d+)d\s+(\d+)h\s+(\d+)m/);
+            if (match) {
+                const days = parseInt(match[1]);
+                const hours = parseInt(match[2]);
+                const minutes = parseInt(match[3]);
+                
+                if (days === 0) {
+                    timeDisplay = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                    
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    const currentMinute = now.getMinutes();
+                    
+                    if (currentHour === hours && Math.abs(currentMinute - minutes) <= 30) {
+                        isLive = true;
+                    }
+                } else {
+                    timeDisplay = `H-${days} ${hours}:${minutes.toString().padStart(2, '0')}`;
+                }
+            }
+        }
+        
+        const genres = anime.genres ? anime.genres.split(', ') : [];
+        
+        return `
+            <div class="schedule-item ${isLive ? 'live' : ''}" onclick="showAnimeDetail('${anime.animeId}')">
+                <div class="schedule-time">
+                    <i class="fas fa-clock"></i> 
+                    ${timeDisplay}
+                    ${anime.estimation === 'Update' ? '<span class="badge-update">Update</span>' : ''}
+                    ${isLive ? '<span class="badge-live">LIVE</span>' : ''}
+                </div>
+                <div class="schedule-content">
+                    <img src="${anime.poster || 'https://via.placeholder.com/60x80'}" 
+                         alt="${anime.title}" 
+                         class="schedule-poster"
+                         onerror="this.src='https://via.placeholder.com/60x80'">
+                    <div class="schedule-info">
+                        <h3 class="schedule-title">${anime.title}</h3>
+                        <div class="schedule-meta">
+                            <span class="badge-type">${anime.type || 'TV'}</span>
+                            <span class="badge-score">⭐ ${anime.score || 'N/A'}</span>
+                        </div>
+                        <div class="schedule-genres">
+                            ${genres.slice(0, 3).map(g => 
+                                `<span class="genre-pill">${g}</span>`
+                            ).join('')}
+                            ${genres.length > 3 ? `<span class="genre-pill">+${genres.length-3}</span>` : ''}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     const html = `
         <div class="schedule-container">
             <div class="schedule-header">
-                <h2>📅 Jadwal Rilis</h2>
-                <p class="schedule-date">${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div>
+                    <h2>📅 Jadwal Rilis Anime</h2>
+                    <p class="schedule-date">
+                        ${new Date().toLocaleDateString('id-ID', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        })}
+                    </p>
+                </div>
+                <div class="schedule-stats">
+                    <span class="stat-badge">
+                        <i class="fas fa-calendar-day"></i> ${totalEpisodes} Episode
+                    </span>
+                    ${liveNow > 0 ? `
+                        <span class="stat-badge live">
+                            <i class="fas fa-circle"></i> ${liveNow} Sedang Tayang
+                        </span>
+                    ` : ''}
+                </div>
             </div>
             
             <div class="day-tabs">
-                ${daysHTML}
+                ${daysTabs}
             </div>
             
             <div class="schedule-list">
                 ${scheduleHTML || '<p class="no-schedule">Tidak ada jadwal untuk hari ini</p>'}
             </div>
+            
+            <div class="schedule-note">
+                <i class="fas fa-info-circle"></i>
+                <span>Jam tayang dalam WIB. ${liveNow > 0 ? '🟢 Live sekarang!' : 'Jadwal dapat berubah sewaktu-waktu.'}</span>
+            </div>
         </div>
     `;
     
     mainContent.innerHTML = html;
-    
-    // Mark live schedule
-    setTimeout(markLiveSchedule, 500);
+    localStorage.setItem('currentDay', currentDay);
 }
 
 function changeDay(day) {
-    currentDay = day;
+    localStorage.setItem('currentDay', day);
     loadSchedule();
 }
 
-function markLiveSchedule() {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+setInterval(() => {
+    if (currentPage === 'schedule') {
+        loadSchedule();
+    }
+}, 60000);
+
+async function loadOngoing() {
+    const data = await fetchAPI('/ongoing?page=1');
+    const animeList = data?.data?.animeList || [];
     
-    document.querySelectorAll('.schedule-item').forEach(item => {
-        const timeElement = item.querySelector('.schedule-time');
-        if (!timeElement) return;
-        
-        const timeText = timeElement.innerText;
-        const match = timeText.match(/(\d+):(\d+)/);
-        if (!match) return;
-        
-        const hour = parseInt(match[1]);
-        const minute = parseInt(match[2]);
-        
-        if (hour === currentHour && Math.abs(minute - currentMinute) <= 30) {
-            item.classList.add('live');
-        } else {
-            item.classList.remove('live');
-        }
-    });
+    let html = '<h2 style="margin-bottom: 20px;">Ongoing Anime</h2>';
+    
+    if (animeList.length === 0) {
+        html += '<p>Tidak ada data.</p>';
+    } else {
+        html += '<div class="anime-grid">';
+        animeList.forEach(anime => {
+            html += createAnimeCard(anime);
+        });
+        html += '</div>';
+    }
+    
+    mainContent.innerHTML = html;
 }
 
 async function loadCompleted() {
@@ -473,7 +544,6 @@ function loadSettings() {
         </div>
     `;
     
-    // Load saved preferences
     const darkMode = localStorage.getItem('darkMode') === 'true';
     const notifications = localStorage.getItem('notifications') === 'true';
     
@@ -730,15 +800,15 @@ async function searchAnime(keyword) {
 
 async function changeServer(serverId, episodeId) {
     try {
-        const data = await fetchAPI(`/server/${serverId}`);
-        const videoUrl = data?.data?.url || data?.url || 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+        const response = await fetch(`https://www.sankavollerei.com/anime/samehadaku/server/${serverId}`);
+        const data = await response.json();
+        const videoUrl = data?.data?.url || data?.url;
         
         const video = document.querySelector('video');
-        if (video) {
+        if (video && videoUrl) {
             video.src = videoUrl;
             video.play();
             
-            // Update active button
             document.querySelectorAll('.server-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
         }
@@ -756,7 +826,6 @@ function toggleFavorite(animeId) {
     
     localStorage.setItem('favorites', JSON.stringify(favorites));
     
-    // Update button
     const btn = document.querySelector('.favorite-btn');
     if (btn) {
         const isFavorite = favorites.includes(animeId);
@@ -805,11 +874,12 @@ function clearCache() {
     if (confirm('Hapus semua cache? Favorit akan tetap tersimpan.')) {
         localStorage.removeItem('darkMode');
         localStorage.removeItem('notifications');
+        localStorage.removeItem('currentDay');
         location.reload();
     }
 }
 
-// Make functions global
+// Global functions
 window.navigateToPage = navigateToPage;
 window.showAnimeDetail = showAnimeDetail;
 window.showEpisode = showEpisode;
