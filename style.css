@@ -1,4 +1,4 @@
-* {
+{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -505,29 +505,63 @@ body {
 
 /* Schedule Styles */
 .schedule-container {
-    padding: 20px 0;
+    padding: 0 0 20px;
 }
 
 .schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .schedule-header h2 {
-    font-size: 24px;
-    margin-bottom: 5px;
+    font-size: 20px;
     color: var(--primary);
 }
 
 .schedule-date {
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.schedule-stats {
+    display: flex;
+    gap: 8px;
+}
+
+.stat-badge {
+    background: var(--surface);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-badge.live {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+    animation: pulse 2s infinite;
+}
+
+.stat-badge i {
+    font-size: 11px;
 }
 
 .day-tabs {
     display: flex;
     overflow-x: auto;
     gap: 8px;
-    padding: 10px 0 20px;
+    padding: 0 0 15px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 }
@@ -578,6 +612,11 @@ body {
     border-color: var(--primary);
 }
 
+.schedule-item.live {
+    border-left: 4px solid var(--success);
+    background: linear-gradient(90deg, rgba(72, 187, 120, 0.05) 0%, var(--surface) 100%);
+}
+
 .schedule-time {
     color: var(--primary);
     font-size: 13px;
@@ -590,6 +629,23 @@ body {
 
 .schedule-time i {
     font-size: 12px;
+}
+
+.badge-update, .badge-live {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    margin-left: 8px;
+    color: white;
+}
+
+.badge-update {
+    background: var(--warning);
+}
+
+.badge-live {
+    background: var(--success);
+    animation: pulse 1.5s infinite;
 }
 
 .schedule-content {
@@ -610,22 +666,48 @@ body {
 }
 
 .schedule-title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     margin-bottom: 4px;
     color: var(--text-primary);
 }
 
-.schedule-episode {
-    font-size: 13px;
-    color: var(--primary);
-    font-weight: 500;
-    margin-bottom: 4px;
+.schedule-meta {
+    display: flex;
+    gap: 8px;
+    margin: 5px 0;
 }
 
-.schedule-studio {
-    font-size: 12px;
+.badge-type {
+    background: var(--primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+}
+
+.badge-score {
+    background: var(--surface);
+    color: var(--text-primary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    border: 1px solid var(--border);
+}
+
+.schedule-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.genre-pill {
+    background: var(--background);
     color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 9px;
+    border: 1px solid var(--border);
 }
 
 .no-schedule {
@@ -636,19 +718,21 @@ body {
     border-radius: 12px;
 }
 
-.schedule-item.live .schedule-time {
-    color: var(--success);
-    animation: pulse 2s infinite;
+.schedule-note {
+    margin-top: 20px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.schedule-item.live .schedule-time::after {
-    content: 'LIVE';
-    background: var(--success);
-    color: white;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 12px;
-    margin-left: 8px;
+.schedule-note i {
+    color: var(--primary);
 }
 
 /* Detail Page */
@@ -817,6 +901,7 @@ body {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .nav-btn {
@@ -838,27 +923,21 @@ body {
 .server-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     margin: 15px 0;
 }
 
 .server-btn {
     background: var(--background);
     border: 1px solid var(--border);
-    padding: 8px 15px;
+    padding: 6px 12px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     transition: all 0.3s;
 }
 
-.server-btn:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.server-btn.active {
+.server-btn:hover, .server-btn.active {
     background: var(--primary);
     color: white;
     border-color: var(--primary);
@@ -1028,7 +1107,7 @@ input:checked + .slider:before {
 
 @keyframes pulse {
     0% { opacity: 1; }
-    50% { opacity: 0.7; }
+    50% { opacity: 0.6; }
     100% { opacity: 1; }
 }
 
@@ -1049,4 +1128,4 @@ input:checked + .slider:before {
         max-width: 1200px;
         margin: 0 auto;
     }
-    }
+}
