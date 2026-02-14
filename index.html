@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeNIME - Streaming Anime</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1 onclick="navigate('home')">🎬 TeNIME</h1>
+            <nav>
+                <button onclick="navigate('home')">Home</button>
+                <button onclick="navigate('ongoing')">Ongoing</button>
+                <button onclick="navigate('completed')">Completed</button>
+                <button onclick="navigate('popular')">Popular</button>
+                <button onclick="navigate('movies')">Movies</button>
+                <button onclick="toggleSearch()">🔍</button>
+            </nav>
+        </div>
+        <div id="search-container" style="display:none;">
+            <input type="text" id="search-input" placeholder="Cari anime...">
+            <button onclick="searchAnime()">Cari</button>
+        </div>
+    </header>
+
+    <main id="content">
+        <div class="loading">⏳ Loading...</div>
+    </main>
+
+    <div id="pagination" style="display:none;"></div>
+
+    <footer>
+        <p>Data dari Sanka Vollerei API. Gunakan dengan bijak (rate limit 70/menit).</p>
+        <p>⚠️ Jika video tidak muncul, coba pilih server lain di halaman episode.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
