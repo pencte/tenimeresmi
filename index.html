@@ -2,39 +2,135 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TeNIME - Streaming Anime</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <h1 onclick="navigate('home')">🎬 TeNIME</h1>
-            <nav>
-                <button onclick="navigate('home')">Home</button>
-                <button onclick="navigate('ongoing')">Ongoing</button>
-                <button onclick="navigate('completed')">Completed</button>
-                <button onclick="navigate('popular')">Popular</button>
-                <button onclick="navigate('movies')">Movies</button>
-                <button onclick="toggleSearch()">🔍</button>
-            </nav>
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splash">
+        <div class="splash-content">
+            <div class="splash-icon">
+                <i class="fas fa-film"></i>
+            </div>
+            <h1>TeNIME</h1>
+            <p>Streaming Anime Terbaik</p>
+            <div class="splash-loader"></div>
         </div>
-        <div id="search-container" style="display:none;">
-            <input type="text" id="search-input" placeholder="Cari anime...">
-            <button onclick="searchAnime()">Cari</button>
+    </div>
+
+    <!-- Main App (hidden initially) -->
+    <div class="app-container" id="app" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-film"></i>
+                    <h1>TeNIME</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" id="searchToggle">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="icon-btn" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-bar" id="searchBar" style="display: none;">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari anime...">
+                <button class="close-search" id="closeSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Side Menu -->
+        <div class="side-menu" id="sideMenu">
+            <div class="menu-header">
+                <div class="menu-logo">
+                    <i class="fas fa-film"></i>
+                    <span>TeNIME</span>
+                </div>
+                <button class="close-menu" id="closeMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item active" data-page="home">
+                    <i class="fas fa-home"></i>
+                    <span>Beranda</span>
+                </div>
+                <div class="menu-item" data-page="ongoing">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Jadwal Rilis</span>
+                </div>
+                <div class="menu-item" data-page="completed">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed</span>
+                </div>
+                <div class="menu-item" data-page="popular">
+                    <i class="fas fa-fire"></i>
+                    <span>Popular</span>
+                </div>
+                <div class="menu-item" data-page="movies">
+                    <i class="fas fa-film"></i>
+                    <span>Movies</span>
+                </div>
+                <div class="menu-divider"></div>
+                <div class="menu-item" data-page="favorites">
+                    <i class="fas fa-heart"></i>
+                    <span>Favorit</span>
+                </div>
+                <div class="menu-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Pengaturan</span>
+                </div>
+            </div>
+            <div class="menu-footer">
+                <p>Version 1.0.0</p>
+            </div>
         </div>
-    </header>
 
-    <main id="content">
-        <div class="loading">⏳ Loading...</div>
-    </main>
+        <!-- Overlay for menu -->
+        <div class="overlay" id="overlay"></div>
 
-    <div id="pagination" style="display:none;"></div>
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Memuat data...</p>
+            </div>
+        </main>
 
-    <footer>
-        <p>Data dari Sanka Vollerei API. Gunakan dengan bijak (rate limit 70/menit).</p>
-        <p>⚠️ Jika video tidak muncul, coba pilih server lain di halaman episode.</p>
-    </footer>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-page="home">
+                <i class="fas fa-home"></i>
+                <span>Beranda</span>
+            </div>
+            <div class="nav-item" data-page="ongoing">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Jadwal</span>
+            </div>
+            <div class="nav-item" data-page="search">
+                <i class="fas fa-search"></i>
+                <span>Cari</span>
+            </div>
+            <div class="nav-item" data-page="popular">
+                <i class="fas fa-fire"></i>
+                <span>Popular</span>
+            </div>
+            <div class="nav-item" data-page="favorites">
+                <i class="fas fa-heart"></i>
+                <span>Favorit</span>
+            </div>
+        </nav>
+    </div>
 
     <script src="app.js"></script>
 </body>
